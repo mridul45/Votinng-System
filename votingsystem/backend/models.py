@@ -20,7 +20,7 @@ class Candidate(models.Model):
     aadhar_num = models.BigIntegerField(default=0)
     candidate_id = models.BigIntegerField(default=0)
     party_affiliated = models.TextField(null=True,blank=True)
-    election_name = models.ManyToManyField(Election,on_delete=models.SET_NULL,null=True)
+    election_name = models.ManyToManyField(Election)
     email = models.EmailField(max_length=500,null=True,blank=True)
     photo = models.TextField()
 
@@ -32,7 +32,7 @@ class Voter(models.Model):
     
     acc_holder = models.ForeignKey(User,null=False,on_delete=models.CASCADE)
     aadhar_number = models.CharField(max_length=500,null=True,blank=True)
-    election_name = models.ManyToManyField(Election,on_delete=models.SET_NULL,null=True)
+    election_name = models.ManyToManyField(Election)
     email = models.EmailField(max_length=500,null=True,blank=True)
     age = models.IntegerField(default=18)
 
