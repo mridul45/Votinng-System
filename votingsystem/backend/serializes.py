@@ -6,7 +6,7 @@ class CandidateSerializer(serializers.ModelSerializer):
     class Meta:
 
         model = Candidate
-        fields = ["id","address","candidate_id","party_affiliated","election_type","bio","photo","campaign_slogan"]
+        fields = ["id","candidate_id","party_affiliated","election_type","bio","photo","campaign_slogan"]
 
 
 class CandidateCreateSerializer(serializers.ModelSerializer):
