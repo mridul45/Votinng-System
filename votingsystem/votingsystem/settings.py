@@ -26,6 +26,9 @@ SECRET_KEY = "django-insecure-=!)9iw@0^p3&j*^9l7&vcp(9*5hv!p)k^)7znz^lpx#cl1e5=&
 DEBUG = True
 
 ALLOWED_HOSTS = []
+# settings.py
+
+CORS_ALLOWED_ORIGINS = ['*']
 
 
 # Application definition
@@ -38,7 +41,8 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     'rest_framework',
-    'backend'
+    'backend',
+    'corsheaders'
 ]
 
 MIDDLEWARE = [
@@ -49,6 +53,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    'corsheaders.middleware.CorsMiddleware'
 ]
 
 ROOT_URLCONF = "votingsystem.urls"
