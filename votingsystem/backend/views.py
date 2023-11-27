@@ -59,3 +59,19 @@ class ElectionViewSet(viewsets.ViewSet):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+class UserSignupViewSet(viewsets.ViewSet):
+    serializer_class = UserSignupSerializer
+
+    def create(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        # Create a new user
+        user = User.objects.create_user(
+            username=serializer.validated_data['name'],
+            password=serializer.validated_data['password']
+        )
+
+        return Response({'message': 'User created successfully'}, status=status.HTTP_201_CREATED)
