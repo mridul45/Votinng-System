@@ -21,3 +21,10 @@ class VoterSerializer(serializers.ModelSerializer):
 
         model = Voter
         fields = "__all__"
+
+
+class ElectionSerializer(serializers.ModelSerializer):
+    class Meta:
+
+        model = Election
+        fields = "__all__"

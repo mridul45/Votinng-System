@@ -39,3 +39,23 @@ class VoterViewset(viewsets.ViewSet):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+
+class ElectionViewSet(viewsets.ViewSet):
+
+    def list(self,request):
+
+        elections = Election.objects.all()
+        serializer = ElectionSerializer(elections,many=True)
+
+        return Response(serializer.data)
+    
+
+    def create(self, request):
+        serializer = ElectionSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
