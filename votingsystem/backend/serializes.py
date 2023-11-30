@@ -37,7 +37,7 @@ class UserSignupSerializer(serializers.Serializer):
     email = serializers.CharField(max_length=255)
 
 
-class VotedSerializer(serializers.Serializer):
+class VotedSerializer(serializers.ModelSerializer):
     class Meta:
 
         model = Voted
