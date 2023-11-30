@@ -42,3 +42,11 @@ class VotedSerializer(serializers.ModelSerializer):
 
         model = Voted
         fields = "__all__"
+
+
+
+class ShareSerializer(serializers.ModelSerializer):
+    class Meta:
+
+        model = Shares
+        fields = "__all__"
