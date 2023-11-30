@@ -70,7 +70,28 @@ class UserSignupViewSet(viewsets.ViewSet):
         # Create a new user
             user = User.objects.create_user(
                 username=serializer.validated_data['name'],
-                password=serializer.validated_data['password']
+                password=serializer.validated_data['password'],
+                email = serializer.validated_data['email']
             )
 
         return Response({'message': 'User created successfully'}, status=status.HTTP_201_CREATED)
+    
+
+
+class VotedViewset(viewsets.ViewSet):
+
+    def list(self,request):
+
+        votes = Voted.objects.all()
+        serializer = VotedSerializer(votes,many=True)
+
+        return Response(serializer.data)
+    
+
+    def create(self, request):
+        serializer = VotedSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

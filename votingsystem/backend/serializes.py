@@ -34,3 +34,11 @@ class ElectionSerializer(serializers.ModelSerializer):
 class UserSignupSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=255)
     password = serializers.CharField(write_only=True)
+    email = serializers.CharField(max_length=255)
+
+
+class VotedSerializer(serializers.Serializer):
+    class Meta:
+
+        model = Voted
+        fields = "__all__"

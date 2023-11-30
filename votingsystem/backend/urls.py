@@ -9,6 +9,8 @@ router.register(r'candidates',CandidateViewSet,basename='candidate')
 router.register(r'voters',VoterViewset,basename='voter')
 router.register(r'elections',ElectionViewSet,basename='elections')
 router.register(r'signup',UserSignupViewSet,basename='signup')
+router.register(r'votes',VotedViewset,basename='voted'),
+router.register(r'voted',VotedViewset,basename='voted')
 
 urlpatterns = [
     path('',include(router.urls))
