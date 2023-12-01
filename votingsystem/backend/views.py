@@ -116,6 +116,7 @@ class ShareUploadViewSet(viewsets.ViewSet):
     def create(self, request):
         # Assuming the share link is sent in the request data as 'uploaded_share1_link'
         uploaded_share1_link = request.data.get('uploaded_share1_link')
+        print("Request data:", request.data)
 
         if not uploaded_share1_link:
             return JsonResponse({'error': 'Invalid request. Share link not provided.'}, status=400)
