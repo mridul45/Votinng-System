@@ -113,21 +113,23 @@ class ShareViewset(viewsets.ViewSet):
 
         return Response(serializer.data)
     
+
 class ShareUploadViewSet(viewsets.ViewSet):
     parser_classes = (FileUploadParser,)
+    serializer_class = ShareUploadSerializer  # Use the provided serializer
 
     def create(self, request, *args, **kwargs):
-        uploaded_share1_data = request.FILES.get('uploaded_share1_link')
+        serializer = self.serializer_class(data=request.data)
 
-        if not uploaded_share1_data:
-            print("Invalid request. Share data not provided.")
-            return Response({'error': 'Invalid request. Share data not provided.'}, status=status.HTTP_400_BAD_REQUEST)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        uploaded_share1_data = serializer.validated_data['uploaded_share1_link']
 
         try:
             # Read the binary data from the uploaded file
             binary_data = uploaded_share1_data.read()
         except Exception as e:
-            print(f"Failed to read uploaded file. Error: {e}")
             return Response({'error': 'Failed to read uploaded file.'}, status=status.HTTP_400_BAD_REQUEST)
 
         # Now 'binary_data' contains the binary image data
@@ -141,7 +143,6 @@ class ShareUploadViewSet(viewsets.ViewSet):
             # Get the latest user's share from the database
             user_share = Shares.objects.latest('id')
         except ObjectDoesNotExist:
-            print("User share not found in the database")
             return Response({'error': 'User share not found in the database'}, status=status.HTTP_400_BAD_REQUEST)
 
         decrypted_data_database = decrypt_share(user_share.share1.read(), iv)
@@ -153,15 +154,16 @@ class ShareUploadViewSet(viewsets.ViewSet):
         if combined_share:
             # Decryption successful, generate a random 4-digit number
             random_number = random.randint(1000, 9999)
-            print(f"Decryption successful. Random number: {random_number}")
+
+            # Save the combined share to the database
+            user_share.share_combined = combined_share
+            user_share.save()
 
             # Return the random number as JSON response
             return Response({'random_number': random_number})
         else:
             # Failed to combine shares
-            print("Failed to combine shares")
             return Response({'error': 'Failed to combine shares'}, status=status.HTTP_400_BAD_REQUEST)
-
 
 
 def combine_shares(share1, share2):

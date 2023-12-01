@@ -50,3 +50,10 @@ class ShareSerializer(serializers.ModelSerializer):
 
         model = Shares
         fields = "__all__"
+
+
+class ShareUploadSerializer(serializers.Serializer):
+    uploaded_share1_link = serializers.FileField()
+
+    def validate_uploaded_share1_link(self, value):
+        return value
