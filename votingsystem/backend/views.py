@@ -135,7 +135,8 @@ class ShareUploadViewSet(viewsets.ViewSet):
         decrypted_data_uploaded = decrypt_share(uploaded_share1_content.read(), iv)
 
         # Get the user's share from the database
-        user_share = Shares.objects.order_by('-created_at').first()
+        user_share = Shares.objects.order_by('-id').first()
+
         if user_share:
             decrypted_data_database = decrypt_share(user_share.share1.read(), iv)
 
