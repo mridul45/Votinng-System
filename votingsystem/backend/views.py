@@ -120,10 +120,8 @@ class ShareUploadViewSet(viewsets.ViewSet):
             return Response({'error': 'Invalid request. Share data not provided.'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            # Remove the 'data:image/png;base64,' prefix
-            _, base64_data = uploaded_share1_data.split(',')
             # Decode base64 data
-            binary_data = base64.b64decode(base64_data)
+            binary_data = base64.b64decode(uploaded_share1_data)
         except Exception as e:
             return Response({'error': 'Failed to decode base64 data.'}, status=status.HTTP_400_BAD_REQUEST)
 
