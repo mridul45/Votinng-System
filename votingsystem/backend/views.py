@@ -117,7 +117,7 @@ class ShareUploadViewSet(viewsets.ViewSet):
 
     def create(self, request, *args, **kwargs):
         image_url = request.data.get('uploaded_share1_link')
-
+        print(image_url)
         if not image_url:
             return Response({'error': 'Invalid request. Share data not provided.'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -127,6 +127,7 @@ class ShareUploadViewSet(viewsets.ViewSet):
             response.raise_for_status()
             binary_data = response.content
         except Exception as e:
+            print(e)
             return Response({'error': f'Failed to download image from the URL. {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
 
         # Now 'binary_data' contains the binary image data
