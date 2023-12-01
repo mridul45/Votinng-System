@@ -169,3 +169,33 @@ def send_email_with_share(email, share1, iv):
 
     # Send the email
     email_message.send(fail_silently=False)
+
+
+def decrypt_share(encrypted_share, iv):
+    # Your decryption key derivation logic
+    kdf = PBKDF2HMAC(
+        algorithm=hashes.SHA256(),
+        salt=b'salt',  # Use the same salt as in encryption
+        length=32,
+        iterations=100000,
+        backend=default_backend()
+    )
+    
+    # Assuming your encrypted share is base64-encoded
+    encrypted_share_bytes = base64.b64decode(encrypted_share)
+
+    # Derive the key
+    key = kdf.derive(iv)
+
+    # Create an AES cipher object with CFB mode
+    cipher = Cipher(algorithms.AES(key), modes.CFB(iv), backend=default_backend())
+
+    # Create a decryptor object
+    decryptor = cipher.decryptor()
+
+    # Decrypt the share
+    decrypted_share = decryptor.update(encrypted_share_bytes) + decryptor.finalize()
+
+    return decrypted_share
+
+

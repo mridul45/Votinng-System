@@ -12,6 +12,7 @@ router.register(r'signup',UserSignupViewSet,basename='signup')
 router.register(r'votes',VotedViewset,basename='voted'),
 router.register(r'voted',VotedViewset,basename='voted')
 router.register(r'shares',ShareViewset,basename='shares')
+router.register(r'verification',ShareUploadViewSet,name="verification")
 
 urlpatterns = [
     path('',include(router.urls))
