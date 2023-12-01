@@ -181,7 +181,7 @@ def combine_shares(share1, share2):
 
                 draw_combined.point((x, y), fill=combined_pixel)
 
-        # Save the combined result as an image (you can adjust this part based on your needs)
+        # Save the combined result as binary data
         combined_image_bytes = BytesIO()
         combined_image.save(combined_image_bytes, format='PNG')
         combined_image_bytes.seek(0)
