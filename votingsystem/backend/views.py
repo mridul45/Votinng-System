@@ -9,6 +9,8 @@ import requests
 from io import BytesIO
 import random
 from django.core.exceptions import ObjectDoesNotExist
+from urllib.parse import urlparse
+from urllib.request import urlopen
 
 # Create your views here.
 class CandidateViewSet(viewsets.ViewSet):
@@ -122,10 +124,18 @@ class ShareUploadViewSet(viewsets.ViewSet):
             return Response({'error': 'Invalid request. Share data not provided.'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            # Download the image from the URL
-            response = requests.get(image_url)
-            response.raise_for_status()
-            binary_data = response.content
+            # Check the URL scheme and handle accordingly
+            parsed_url = urlparse(image_url)
+            if parsed_url.scheme in ['http', 'https']:
+                response = requests.get(image_url)
+                response.raise_for_status()
+                binary_data = response.content
+            elif parsed_url.scheme == 'data':
+                # For 'data' scheme, directly fetch the data
+                binary_data = urlopen(image_url).read()
+            else:
+                raise ValueError(f"Unsupported URL scheme: {parsed_url.scheme}")
+
         except Exception as e:
             print(e)
             return Response({'error': f'Failed to download image from the URL. {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
@@ -162,6 +172,7 @@ class ShareUploadViewSet(viewsets.ViewSet):
         else:
             # Failed to combine shares
             return Response({'error': 'Failed to combine shares'}, status=status.HTTP_400_BAD_REQUEST)
+
 
 def combine_shares(share1, share2):
     try:
