@@ -8,7 +8,6 @@ from django.http import JsonResponse
 import requests
 from io import BytesIO
 import random
-from rest_framework.parsers import FileUploadParser
 from django.core.exceptions import ObjectDoesNotExist
 
 # Create your views here.
@@ -115,22 +114,20 @@ class ShareViewset(viewsets.ViewSet):
     
 
 class ShareUploadViewSet(viewsets.ViewSet):
-    parser_classes = (FileUploadParser,)
-    serializer_class = ShareUploadSerializer  # Use the provided serializer
 
     def create(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data)
+        image_url = request.data.get('uploaded_share1_link')
 
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-        uploaded_share1_data = serializer.validated_data['uploaded_share1_link']
+        if not image_url:
+            return Response({'error': 'Invalid request. Share data not provided.'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            # Read the binary data from the uploaded file
-            binary_data = uploaded_share1_data.read()
+            # Download the image from the URL
+            response = requests.get(image_url)
+            response.raise_for_status()
+            binary_data = response.content
         except Exception as e:
-            return Response({'error': 'Failed to read uploaded file.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': f'Failed to download image from the URL. {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
 
         # Now 'binary_data' contains the binary image data
         iv = secrets.token_bytes(16)
@@ -164,7 +161,6 @@ class ShareUploadViewSet(viewsets.ViewSet):
         else:
             # Failed to combine shares
             return Response({'error': 'Failed to combine shares'}, status=status.HTTP_400_BAD_REQUEST)
-
 
 def combine_shares(share1, share2):
     try:
