@@ -128,15 +128,16 @@ class ShareUploadViewSet(viewsets.ViewSet):
             return Response({'error': 'Failed to decode base64 data.'}, status=status.HTTP_400_BAD_REQUEST)
 
         # Now 'binary_data' contains the binary image data
+        iv = secrets.token_bytes(16)
         uploaded_share1_content = BytesIO(binary_data)
 
         # Add your decryption logic here
-        decrypted_data_uploaded = decrypt_share(uploaded_share1_content.read())
+        decrypted_data_uploaded = decrypt_share(uploaded_share1_content.read(), iv)
 
         # Get the user's share from the database
         user_share = Shares.objects.filter(pk=1).first()
         if user_share:
-            decrypted_data_database = decrypt_share(user_share.share1.read())
+            decrypted_data_database = decrypt_share(user_share.share1.read(), iv)
 
             # Combine shares (Assuming shares are visualized as black and white images)
             combined_share = combine_shares(decrypted_data_uploaded, decrypted_data_database)
@@ -154,7 +155,6 @@ class ShareUploadViewSet(viewsets.ViewSet):
         else:
             # User's share not found in the database
             return Response({'error': 'User share not found in the database'}, status=status.HTTP_400_BAD_REQUEST)
-
 
 def combine_shares(share1, share2):
     try:

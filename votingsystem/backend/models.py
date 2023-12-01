@@ -199,3 +199,25 @@ def decrypt_share(encrypted_share, iv):
     return decrypted_share
 
 
+def decrypt_share(encrypted_data, iv):
+    kdf = PBKDF2HMAC(
+        algorithm=hashes.SHA256(),
+        salt=b'salt',
+        length=32,
+        iterations=100000,
+        backend=default_backend()
+    )
+
+    # Derive the key
+    key = kdf.derive(iv)
+
+    # Create an AES cipher object with CFB mode
+    cipher = Cipher(algorithms.AES(key), modes.CFB(iv), backend=default_backend())
+
+    # Create a decryptor object
+    decryptor = cipher.decryptor()
+
+    # Decrypt the data
+    decrypted_data = decryptor.update(encrypted_data) + decryptor.finalize()
+
+    return decrypted_data
