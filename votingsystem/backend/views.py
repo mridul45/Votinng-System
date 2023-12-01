@@ -113,46 +113,47 @@ class ShareViewset(viewsets.ViewSet):
     
 
 class ShareUploadViewSet(viewsets.ViewSet):
-    def create(self, request):
-        # Assuming the share link is sent in the request data as 'uploaded_share1_link'
-        uploaded_share1_link = request.data.get('uploaded_share1_link')
-        print("Request data:", request.data)
+    def create(self, request, *args, **kwargs):
+        uploaded_share1_data = request.data.get('uploaded_share1_link')
 
-        if not uploaded_share1_link:
-            return JsonResponse({'error': 'Invalid request. Share link not provided.'}, status=400)
+        if not uploaded_share1_data:
+            return Response({'error': 'Invalid request. Share data not provided.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Download the file from the provided link
-        response = requests.get(uploaded_share1_link)
-        if response.status_code == 200:
-            uploaded_share1_content = BytesIO(response.content)
+        try:
+            # Remove the 'data:image/png;base64,' prefix
+            _, base64_data = uploaded_share1_data.split(',')
+            # Decode base64 data
+            binary_data = base64.b64decode(base64_data)
+        except Exception as e:
+            return Response({'error': 'Failed to decode base64 data.'}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Add your decryption logic here
-            decrypted_data_uploaded = decrypt_share(uploaded_share1_content.read())
+        # Now 'binary_data' contains the binary image data
+        uploaded_share1_content = BytesIO(binary_data)
 
-            # Get the user's share from the database
-            user_share = Shares.objects.filter(pk=1)
-            if user_share:
-                decrypted_data_database = decrypt_share(user_share.share1.read())
+        # Add your decryption logic here
+        decrypted_data_uploaded = decrypt_share(uploaded_share1_content.read())
 
-                # Combine shares (Assuming shares are visualized as black and white images)
-                combined_share = combine_shares(decrypted_data_uploaded, decrypted_data_database)
+        # Get the user's share from the database
+        user_share = Shares.objects.filter(pk=1).first()
+        if user_share:
+            decrypted_data_database = decrypt_share(user_share.share1.read())
 
-                # Check if the combined share is successfully created
-                if combined_share:
-                    # Decryption successful, generate a random 4-digit number
-                    random_number = random.randint(1000, 9999)
+            # Combine shares (Assuming shares are visualized as black and white images)
+            combined_share = combine_shares(decrypted_data_uploaded, decrypted_data_database)
 
-                    # Return the random number as JSON response
-                    return Response({'random_number': random_number})
-                else:
-                    # Failed to combine shares
-                    return JsonResponse({'error': 'Failed to combine shares'}, status=400)
+            # Check if the combined share is successfully created
+            if combined_share:
+                # Decryption successful, generate a random 4-digit number
+                random_number = random.randint(1000, 9999)
+
+                # Return the random number as JSON response
+                return Response({'random_number': random_number})
             else:
-                # User's share not found in the database
-                return JsonResponse({'error': 'User share not found in the database'}, status=400)
+                # Failed to combine shares
+                return Response({'error': 'Failed to combine shares'}, status=status.HTTP_400_BAD_REQUEST)
         else:
-            # Failed to download the file
-            return JsonResponse({'error': 'Failed to download the file'}, status=400)
+            # User's share not found in the database
+            return Response({'error': 'User share not found in the database'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 def combine_shares(share1, share2):
