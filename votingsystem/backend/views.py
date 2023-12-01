@@ -8,6 +8,8 @@ from django.http import JsonResponse
 import requests
 from io import BytesIO
 import random
+from rest_framework.parsers import FileUploadParser
+from django.core.exceptions import ObjectDoesNotExist
 
 # Create your views here.
 class CandidateViewSet(viewsets.ViewSet):
@@ -113,17 +115,19 @@ class ShareViewset(viewsets.ViewSet):
     
 
 class ShareUploadViewSet(viewsets.ViewSet):
+    parser_classes = (FileUploadParser,)
+
     def create(self, request, *args, **kwargs):
-        uploaded_share1_data = request.data.get('uploaded_share1_link')
+        uploaded_share1_data = request.FILES.get('uploaded_share1_link')
 
         if not uploaded_share1_data:
             return Response({'error': 'Invalid request. Share data not provided.'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            # Decode base64 data
-            binary_data = base64.b64decode(uploaded_share1_data)
+            # Read the binary data from the uploaded file
+            binary_data = uploaded_share1_data.read()
         except Exception as e:
-            return Response({'error': 'Failed to decode base64 data.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Failed to read uploaded file.'}, status=status.HTTP_400_BAD_REQUEST)
 
         # Now 'binary_data' contains the binary image data
         iv = secrets.token_bytes(16)
@@ -132,28 +136,28 @@ class ShareUploadViewSet(viewsets.ViewSet):
         # Add your decryption logic here
         decrypted_data_uploaded = decrypt_share(uploaded_share1_content.read(), iv)
 
-        # Get the user's share from the database
-        user_share = Shares.objects.order_by('-id').first()
-
-        if user_share:
-            decrypted_data_database = decrypt_share(user_share.share1.read(), iv)
-
-            # Combine shares (Assuming shares are visualized as black and white images)
-            combined_share = combine_shares(decrypted_data_uploaded, decrypted_data_database)
-
-            # Check if the combined share is successfully created
-            if combined_share:
-                # Decryption successful, generate a random 4-digit number
-                random_number = random.randint(1000, 9999)
-
-                # Return the random number as JSON response
-                return Response({'random_number': random_number})
-            else:
-                # Failed to combine shares
-                return Response({'error': 'Failed to combine shares'}, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            # User's share not found in the database
+        try:
+            # Get the latest user's share from the database
+            user_share = Shares.objects.latest('id')
+        except ObjectDoesNotExist:
             return Response({'error': 'User share not found in the database'}, status=status.HTTP_400_BAD_REQUEST)
+
+        decrypted_data_database = decrypt_share(user_share.share1.read(), iv)
+
+        # Combine shares (Assuming shares are visualized as black and white images)
+        combined_share = combine_shares(decrypted_data_uploaded, decrypted_data_database)
+
+        # Check if the combined share is successfully created
+        if combined_share:
+            # Decryption successful, generate a random 4-digit number
+            random_number = random.randint(1000, 9999)
+
+            # Return the random number as JSON response
+            return Response({'random_number': random_number})
+        else:
+            # Failed to combine shares
+            return Response({'error': 'Failed to combine shares'}, status=status.HTTP_400_BAD_REQUEST)
+
 
 def combine_shares(share1, share2):
     try:
