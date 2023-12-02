@@ -11,6 +11,7 @@ import random
 from django.core.exceptions import ObjectDoesNotExist
 from urllib.parse import urlparse
 from urllib.request import urlopen
+import pdb
 
 # Create your views here.
 class CandidateViewSet(viewsets.ViewSet):
@@ -118,6 +119,7 @@ class ShareViewset(viewsets.ViewSet):
 class ShareUploadViewSet(viewsets.ViewSet):
 
     def create(self, request, *args, **kwargs):
+        pdb.set_trace()
         image_url = request.data.get('uploaded_share1_link')
         print(image_url)
         if not image_url:
