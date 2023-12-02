@@ -116,7 +116,6 @@ class ShareViewset(viewsets.ViewSet):
         return Response(serializer.data)
     
 
-from django.db import transaction
 
 class ShareUploadViewSet(viewsets.ViewSet):
 
