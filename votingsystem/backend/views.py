@@ -153,18 +153,18 @@ class ShareUploadViewSet(viewsets.ViewSet):
 
         # Check if the combined share is successfully created
         if combined_share:
-            # Decryption successful, generate a random 4-digit number
-            random_number = random.randint(1000, 9999)
-
             # Save the combined share to the database
             user_share.share_combined = combined_share
             user_share.save()
 
-            # Return the random number as JSON response
-            return Response({'random_number': random_number})
+            # Return a simple success message
+            return Response({'message': 'Shares combined successfully'}, status=status.HTTP_200_OK)
+
         else:
             # Failed to combine shares
             return Response({'error': 'Failed to combine shares'}, status=status.HTTP_400_BAD_REQUEST)
+
+
 
 def combine_shares(share1, share2):
     try:
