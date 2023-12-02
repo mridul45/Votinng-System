@@ -116,54 +116,55 @@ class ShareViewset(viewsets.ViewSet):
         return Response(serializer.data)
     
 
+from django.db import transaction
+
 class ShareUploadViewSet(viewsets.ViewSet):
 
+    @transaction.atomic
     def create(self, request, *args, **kwargs):
         base64_image = request.data.get('uploaded_share1_base64')
-        print(base64_image)
         
+        # Input validation
         if not base64_image:
             return Response({'error': 'Invalid request. Share data not provided.'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            # Decode base64-encoded image
             binary_data = base64.b64decode(base64_image)
-
         except Exception as e:
             print(e)
             return Response({'error': f'Failed to decode base64-encoded image. {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Now 'binary_data' contains the binary image data
         iv = secrets.token_bytes(16)
         uploaded_share1_content = BytesIO(binary_data)
 
-        # Add your decryption logic here
-        decrypted_data_uploaded = decrypt_share(uploaded_share1_content.read(), iv)
+        try:
+            # Decryption logic with error handling
+            decrypted_data_uploaded = decrypt_share(uploaded_share1_content.read(), iv)
+        except Exception as e:
+            return Response({'error': f'Failed to decrypt uploaded share. {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             # Get the latest user's share from the database
             user_share = Shares.objects.latest('id')
-        except ObjectDoesNotExist:
+        except Shares.DoesNotExist:
             return Response({'error': 'User share not found in the database'}, status=status.HTTP_400_BAD_REQUEST)
 
-        decrypted_data_database = decrypt_share(user_share.share1.read(), iv)
+        try:
+            # Decryption logic with error handling
+            decrypted_data_database = decrypt_share(user_share.share1.read(), iv)
+        except Exception as e:
+            return Response({'error': f'Failed to decrypt database share. {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
 
         # Combine shares (Assuming shares are visualized as black and white images)
         combined_share = combine_shares(decrypted_data_uploaded, decrypted_data_database)
 
         # Check if the combined share is successfully created
         if combined_share:
-            # Save the combined share to the database
-            user_share.share_combined = combined_share
-            user_share.save()
-
             # Return a simple success message
             return Response({'message': 'Shares combined successfully'}, status=status.HTTP_200_OK)
-
         else:
             # Failed to combine shares
             return Response({'error': 'Failed to combine shares'}, status=status.HTTP_400_BAD_REQUEST)
-
 
 
 def combine_shares(share1, share2):
