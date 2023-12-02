@@ -120,7 +120,7 @@ class ShareViewset(viewsets.ViewSet):
 class ShareUploadViewSet(viewsets.ViewSet):
 
     def create(self, request, *args, **kwargs):
-        base64_image = request.data.get('uploaded_share1_base64')
+        base64_image = request.data.get('uploaded_image_base64')
         print(request.data)
         
         # Input validation
