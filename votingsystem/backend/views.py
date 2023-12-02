@@ -121,7 +121,6 @@ from django.db import transaction
 class ShareUploadViewSet(viewsets.ViewSet):
 
     def create(self, request, *args, **kwargs):
-        pdb.set_trace()
         base64_image = request.data.get('uploaded_share1_base64')
         
         # Input validation
