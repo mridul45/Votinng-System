@@ -125,22 +125,18 @@ class ShareUploadViewSet(viewsets.ViewSet):
         if not image_url:
             return Response({'error': 'Invalid request. Share data not provided.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        try:
             # Check the URL scheme and handle accordingly
-            parsed_url = urlparse(image_url)
-            if parsed_url.scheme in ['http', 'https']:
-                response = requests.get(image_url)
-                response.raise_for_status()
-                binary_data = response.content
-            elif parsed_url.scheme == 'data':
-                # For 'data' scheme, directly fetch the data
-                binary_data = urlopen(image_url).read()
-            else:
-                raise ValueError(f"Unsupported URL scheme: {parsed_url.scheme}")
+        parsed_url = urlparse(image_url)
+        if parsed_url.scheme in ['http', 'https']:
+            response = requests.get(image_url)
 
-        except Exception as e:
-            print(e)
-            return Response({'error': f'Failed to download image from the URL. {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
+            response.raise_for_status()
+            binary_data = response.content
+        elif parsed_url.scheme == 'data':
+                # For 'data' scheme, directly fetch the data
+            binary_data = urlopen(image_url).read()
+        else:
+            raise ValueError(f"Unsupported URL scheme: {parsed_url.scheme}")
 
         # Now 'binary_data' contains the binary image data
         iv = secrets.token_bytes(16)
@@ -149,12 +145,9 @@ class ShareUploadViewSet(viewsets.ViewSet):
         # Add your decryption logic here
         decrypted_data_uploaded = decrypt_share(uploaded_share1_content.read(), iv)
 
-        try:
             # Get the latest user's share from the database
-            user_share = Shares.objects.latest('id')
-        except ObjectDoesNotExist:
-            return Response({'error': 'User share not found in the database'}, status=status.HTTP_400_BAD_REQUEST)
-
+        user_share = Shares.objects.latest('id')
+        
         decrypted_data_database = decrypt_share(user_share.share1.read(), iv)
 
         # Combine shares (Assuming shares are visualized as black and white images)
