@@ -122,7 +122,7 @@ class ShareUploadViewSet(viewsets.ViewSet):
     def create(self, request, *args, **kwargs):
         base64_image = request.data.get('uploaded_image_base64')
         print(request.data)
-        
+
         # Input validation
         if not base64_image:
             return Response({'error': 'Invalid request. Share data not provided.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -140,6 +140,7 @@ class ShareUploadViewSet(viewsets.ViewSet):
             # Decryption logic with error handling
             decrypted_data_uploaded = decrypt_share(uploaded_share1_content.read(), iv)
         except Exception as e:
+            print(e)
             return Response({'error': f'Failed to decrypt uploaded share. {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
@@ -152,11 +153,12 @@ class ShareUploadViewSet(viewsets.ViewSet):
             # Decryption logic with error handling
             decrypted_data_database = decrypt_share(user_share.share1.read(), iv)
         except Exception as e:
+            print(e)
             return Response({'error': f'Failed to decrypt database share. {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
 
         # Combine shares (Assuming shares are visualized as black and white images)
         combined_share = combine_shares(decrypted_data_uploaded, decrypted_data_database)
-
+        print("COmbined Share", combined_share)
         # Check if the combined share is successfully created
         if combined_share:
             # Return a simple success message
