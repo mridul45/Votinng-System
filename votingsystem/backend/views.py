@@ -119,24 +119,19 @@ class ShareViewset(viewsets.ViewSet):
 class ShareUploadViewSet(viewsets.ViewSet):
 
     def create(self, request, *args, **kwargs):
-        pdb.set_trace()
-        image_url = request.data.get('uploaded_share1_link')
-        print(image_url)
-        if not image_url:
+        base64_image = request.data.get('uploaded_share1_base64')
+        print(base64_image)
+        
+        if not base64_image:
             return Response({'error': 'Invalid request. Share data not provided.'}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Check the URL scheme and handle accordingly
-        parsed_url = urlparse(image_url)
-        if parsed_url.scheme in ['http', 'https']:
-            response = requests.get(image_url)
+        try:
+            # Decode base64-encoded image
+            binary_data = base64.b64decode(base64_image)
 
-            response.raise_for_status()
-            binary_data = response.content
-        elif parsed_url.scheme == 'data':
-                # For 'data' scheme, directly fetch the data
-            binary_data = urlopen(image_url).read()
-        else:
-            raise ValueError(f"Unsupported URL scheme: {parsed_url.scheme}")
+        except Exception as e:
+            print(e)
+            return Response({'error': f'Failed to decode base64-encoded image. {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
 
         # Now 'binary_data' contains the binary image data
         iv = secrets.token_bytes(16)
@@ -145,9 +140,12 @@ class ShareUploadViewSet(viewsets.ViewSet):
         # Add your decryption logic here
         decrypted_data_uploaded = decrypt_share(uploaded_share1_content.read(), iv)
 
+        try:
             # Get the latest user's share from the database
-        user_share = Shares.objects.latest('id')
-        
+            user_share = Shares.objects.latest('id')
+        except ObjectDoesNotExist:
+            return Response({'error': 'User share not found in the database'}, status=status.HTTP_400_BAD_REQUEST)
+
         decrypted_data_database = decrypt_share(user_share.share1.read(), iv)
 
         # Combine shares (Assuming shares are visualized as black and white images)
@@ -167,7 +165,6 @@ class ShareUploadViewSet(viewsets.ViewSet):
         else:
             # Failed to combine shares
             return Response({'error': 'Failed to combine shares'}, status=status.HTTP_400_BAD_REQUEST)
-
 
 def combine_shares(share1, share2):
     try:
