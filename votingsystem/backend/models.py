@@ -142,13 +142,14 @@ def create_visual_shares(data, iv):
     for i, bit in enumerate(binary_data):
         x, y = i % 256, i // 256
         if bit == '1':
-            draw1.point((x, y), fill=1)
-            draw2.point((x, y), fill=0)
+            draw1.point((x, y), fill=0)  # Use 0 for black
+            draw2.point((x, y), fill=1)  # Use 1 for white
         else:
-            draw1.point((x, y), fill=0)
-            draw2.point((x, y), fill=1)
+            draw1.point((x, y), fill=1)  # Use 1 for white
+            draw2.point((x, y), fill=0)  # Use 0 for black
 
     return share1, share2
+
 
 # Update your send_email_with_share function to pass the IV
 def send_email_with_share(email, share1, iv):
