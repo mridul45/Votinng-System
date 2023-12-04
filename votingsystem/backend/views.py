@@ -124,11 +124,11 @@ class ShareUploadViewSet(viewsets.ViewSet):
 
     def create(self, request):
         base64_image = request.data.get('uploaded_image_base64')
-        timestamp_seconds = request.data.get('timestamp')
+        timestamp_str = request.data.get('timestamp')
         print(request.data)
 
         # Input validation
-        if not base64_image or not timestamp_seconds:
+        if not base64_image or not timestamp_str:
             return Response({'error': 'Invalid request. Share data or timestamp not provided.'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
@@ -137,17 +137,15 @@ class ShareUploadViewSet(viewsets.ViewSet):
             print(e)
             return Response({'error': f'Failed to decode base64-encoded image. {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Convert timestamp from seconds to datetime
+        # Parse timestamp from string to datetime
         try:
-            timestamp_datetime = datetime.utcfromtimestamp(int(timestamp_seconds) / 1000.0).replace(tzinfo=timezone.utc)
+            timestamp_datetime = datetime.strptime(timestamp_str, "%a %b %d %Y %H:%M:%S GMT%z (%Z)")
         except ValueError as ve:
             print(ve)
             return Response({'error': f'Invalid timestamp format. {str(ve)}'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Make current_time aware
-        current_time = datetime.now(timezone.utc)
-
         # Check if the timestamp is within 2 minutes of the current time
+        current_time = datetime.now(timestamp_datetime.tzinfo)
         time_difference = current_time - timestamp_datetime
 
         if time_difference <= timedelta(minutes=2):
