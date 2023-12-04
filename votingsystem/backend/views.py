@@ -127,7 +127,6 @@ class ShareUploadViewSet(viewsets.ViewSet):
         # Input validation
         if not base64_image:
             return Response({'error': 'Invalid request. Share data not provided.'}, status=status.HTTP_400_BAD_REQUEST)
-    
 
         try:
             binary_data = base64.b64decode(base64_image)
@@ -135,7 +134,7 @@ class ShareUploadViewSet(viewsets.ViewSet):
             print(e)
             return Response({'error': f'Failed to decode base64-encoded image. {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Generate a random 4-digit number
+        # Generate a random 4-digit number
         random_number = random.randint(1000, 9999)
 
         # Return the random number as a response
