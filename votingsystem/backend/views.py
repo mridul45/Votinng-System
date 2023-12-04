@@ -118,16 +118,15 @@ class ShareViewset(viewsets.ViewSet):
         return Response(serializer.data)
     
 
-
 class ShareUploadViewSet(viewsets.ViewSet):
 
     def create(self, request):
         base64_image = request.data.get('uploaded_image_base64')
-        timestamp_str = request.data.get('timestamp')
+        timestamp_seconds = request.data.get('timestamp')
         print(request.data)
 
         # Input validation
-        if not base64_image or not timestamp_str:
+        if not base64_image or not timestamp_seconds:
             return Response({'error': 'Invalid request. Share data or timestamp not provided.'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
@@ -136,10 +135,9 @@ class ShareUploadViewSet(viewsets.ViewSet):
             print(e)
             return Response({'error': f'Failed to decode base64-encoded image. {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Parse timestamp from string to datetime
+        # Convert timestamp from seconds to datetime
         try:
-            # Adjust the format string for the new timestamp format
-            timestamp_datetime = datetime.strptime(timestamp_str, "%a, %b %d, %Y, %I:%M:%S %p GMT%z")
+            timestamp_datetime = datetime.utcfromtimestamp(int(timestamp_seconds) / 1000.0)  # assuming the timestamp is in milliseconds
         except ValueError as ve:
             print(ve)
             return Response({'error': f'Invalid timestamp format. {str(ve)}'}, status=status.HTTP_400_BAD_REQUEST)
