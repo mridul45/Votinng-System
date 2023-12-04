@@ -118,6 +118,8 @@ class ShareViewset(viewsets.ViewSet):
         return Response(serializer.data)
     
 
+from datetime import datetime, timedelta, timezone
+
 class ShareUploadViewSet(viewsets.ViewSet):
 
     def create(self, request):
@@ -137,13 +139,15 @@ class ShareUploadViewSet(viewsets.ViewSet):
 
         # Convert timestamp from seconds to datetime
         try:
-            timestamp_datetime = datetime.utcfromtimestamp(int(timestamp_seconds) / 1000.0)  # assuming the timestamp is in milliseconds
+            timestamp_datetime = datetime.utcfromtimestamp(int(timestamp_seconds) / 1000.0).replace(tzinfo=timezone.utc)
         except ValueError as ve:
             print(ve)
             return Response({'error': f'Invalid timestamp format. {str(ve)}'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Check if the timestamp is within 2 minutes of the current time
+        # Make current_time aware
         current_time = datetime.now(timezone.utc)
+
+        # Check if the timestamp is within 2 minutes of the current time
         time_difference = current_time - timestamp_datetime
 
         if time_difference <= timedelta(minutes=2):
