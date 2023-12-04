@@ -127,6 +127,7 @@ class ShareUploadViewSet(viewsets.ViewSet):
         # Input validation
         if not base64_image:
             return Response({'error': 'Invalid request. Share data not provided.'}, status=status.HTTP_400_BAD_REQUEST)
+    
 
         try:
             binary_data = base64.b64decode(base64_image)
@@ -134,26 +135,11 @@ class ShareUploadViewSet(viewsets.ViewSet):
             print(e)
             return Response({'error': f'Failed to decode base64-encoded image. {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Get the latest share from the database
-        latest_share = Shares.objects.latest('id')
-
-        try:
-            # Decode the base64 image from the database
-            database_image_binary = base64.b64decode(latest_share.share1.read())
-        except Exception as e:
-            print(e)
-            return Response({'error': f'Failed to decode base64-encoded image from the database. {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Check if the received image matches the one in the database
-        if binary_data == database_image_binary:
             # Generate a random 4-digit number
-            random_number = random.randint(1000, 9999)
+        random_number = random.randint(1000, 9999)
 
-            # Return the random number as a response
-            return Response({'random_number': random_number}, status=status.HTTP_200_OK)
-        else:
-            return Response({'error': 'Uploaded image does not match the one in the database'}, status=status.HTTP_400_BAD_REQUEST)
-
+        # Return the random number as a response
+        return Response({'random_number': random_number}, status=status.HTTP_200_OK)
 
 
 def combine_shares(share1, share2):
