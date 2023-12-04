@@ -138,7 +138,8 @@ class ShareUploadViewSet(viewsets.ViewSet):
 
         # Parse timestamp from string to datetime
         try:
-            timestamp_datetime = datetime.strptime(timestamp_str, "%a %b %d %Y %H:%M:%S GMT%z (%Z)")
+            # Adjust the format string for the new timestamp format
+            timestamp_datetime = datetime.strptime(timestamp_str, "%a, %b %d, %Y, %I:%M:%S %p GMT%z")
         except ValueError as ve:
             print(ve)
             return Response({'error': f'Invalid timestamp format. {str(ve)}'}, status=status.HTTP_400_BAD_REQUEST)
@@ -155,7 +156,6 @@ class ShareUploadViewSet(viewsets.ViewSet):
             return Response({'random_number': random_number}, status=status.HTTP_200_OK)
         else:
             return Response({'error': 'Timestamp is not within 2 minutes of the current time'}, status=status.HTTP_400_BAD_REQUEST)
-
 
 
 def combine_shares(share1, share2):
