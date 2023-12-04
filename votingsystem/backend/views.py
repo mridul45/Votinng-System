@@ -12,6 +12,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from urllib.parse import urlparse
 from urllib.request import urlopen
 import pdb
+import random
 
 # Create your views here.
 class CandidateViewSet(viewsets.ViewSet):
@@ -133,39 +134,11 @@ class ShareUploadViewSet(viewsets.ViewSet):
             print(e)
             return Response({'error': f'Failed to decode base64-encoded image. {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
 
-        iv = secrets.token_bytes(16)
-        uploaded_share1_content = BytesIO(binary_data)
+        # Generate a random 4-digit number
+        random_number = random.randint(1000, 9999)
 
-        try:
-            # Decryption logic with error handling
-            decrypted_data_uploaded = decrypt_share(uploaded_share1_content.read(), iv)
-        except Exception as e:
-            print(e)
-            return Response({'error': f'Failed to decrypt uploaded share. {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            # Get the latest user's share from the database
-            user_share = Shares.objects.latest('id')
-        except Shares.DoesNotExist:
-            return Response({'error': 'User share not found in the database'}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            # Decryption logic with error handling
-            decrypted_data_database = decrypt_share(user_share.share1.read(), iv)
-        except Exception as e:
-            print(e)
-            return Response({'error': f'Failed to decrypt database share. {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Combine shares (Assuming shares are visualized as black and white images)
-        combined_share = combine_shares(decrypted_data_uploaded, decrypted_data_database)
-        print("COmbined Share", combined_share)
-        # Check if the combined share is successfully created
-        if combined_share:
-            # Return a simple success message
-            return Response({'message': 'Shares combined successfully'}, status=status.HTTP_200_OK)
-        else:
-            # Failed to combine shares
-            return Response({'error': 'Failed to combine shares'}, status=status.HTTP_400_BAD_REQUEST)
+        # Return the random number as a response
+        return Response({'random_number': random_number}, status=status.HTTP_200_OK)
 
 
 def combine_shares(share1, share2):
