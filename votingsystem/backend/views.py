@@ -13,6 +13,7 @@ from urllib.parse import urlparse
 from urllib.request import urlopen
 import pdb
 import random
+from datetime import datetime, timedelta,timezone
 
 # Create your views here.
 class CandidateViewSet(viewsets.ViewSet):
@@ -120,13 +121,14 @@ class ShareViewset(viewsets.ViewSet):
 
 class ShareUploadViewSet(viewsets.ViewSet):
 
-    def create(self, request, *args, **kwargs):
+    def create(self, request):
         base64_image = request.data.get('uploaded_image_base64')
+        timestamp_str = request.data.get('timestamp')
         print(request.data)
 
         # Input validation
-        if not base64_image:
-            return Response({'error': 'Invalid request. Share data not provided.'}, status=status.HTTP_400_BAD_REQUEST)
+        if not base64_image or not timestamp_str:
+            return Response({'error': 'Invalid request. Share data or timestamp not provided.'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             binary_data = base64.b64decode(base64_image)
@@ -134,11 +136,26 @@ class ShareUploadViewSet(viewsets.ViewSet):
             print(e)
             return Response({'error': f'Failed to decode base64-encoded image. {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Generate a random 4-digit number
-        random_number = random.randint(1000, 9999)
+        # Parse timestamp from string to datetime
+        try:
+            timestamp_datetime = datetime.strptime(timestamp_str, "%a %b %d %Y %H:%M:%S GMT%z (%Z)")
+        except ValueError as ve:
+            print(ve)
+            return Response({'error': f'Invalid timestamp format. {str(ve)}'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Return the random number as a response
-        return Response({'random_number': random_number}, status=status.HTTP_200_OK)
+        # Check if the timestamp is within 2 minutes of the current time
+        current_time = datetime.now(timezone.utc)
+        time_difference = current_time - timestamp_datetime
+
+        if time_difference <= timedelta(minutes=2):
+            # Generate a random 4-digit number
+            random_number = random.randint(1000, 9999)
+
+            # Return the random number as a response
+            return Response({'random_number': random_number}, status=status.HTTP_200_OK)
+        else:
+            return Response({'error': 'Timestamp is not within 2 minutes of the current time'}, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 def combine_shares(share1, share2):
