@@ -118,6 +118,7 @@ class ShareViewset(viewsets.ViewSet):
         return Response(serializer.data)
     
 
+
 from datetime import datetime, timedelta, timezone
 
 class ShareUploadViewSet(viewsets.ViewSet):
@@ -137,15 +138,15 @@ class ShareUploadViewSet(viewsets.ViewSet):
             print(e)
             return Response({'error': f'Failed to decode base64-encoded image. {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Parse timestamp from string to datetime
+        # Parse timestamp from ISO 8601 format to datetime
         try:
-            timestamp_datetime = datetime.strptime(timestamp_str, "%a %b %d %Y %H:%M:%S GMT%z (%Z)")
+            timestamp_datetime = datetime.fromisoformat(timestamp_str).replace(tzinfo=timezone.utc)
         except ValueError as ve:
             print(ve)
             return Response({'error': f'Invalid timestamp format. {str(ve)}'}, status=status.HTTP_400_BAD_REQUEST)
 
         # Check if the timestamp is within 2 minutes of the current time
-        current_time = datetime.now(timestamp_datetime.tzinfo)
+        current_time = datetime.now(timezone.utc)
         time_difference = current_time - timestamp_datetime
 
         if time_difference <= timedelta(minutes=2):
