@@ -130,7 +130,7 @@ class ShareUploadViewSet(viewsets.ViewSet):
         
         img = Shares.objects.latest('id')
 
-        if img != base64_image:
+        if img.share1 != base64_image:
             return Response({"error": "Not the img"})
 
         else:
