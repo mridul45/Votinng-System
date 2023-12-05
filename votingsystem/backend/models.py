@@ -222,3 +222,15 @@ def decrypt_share(encrypted_data, iv):
     decrypted_data = decryptor.update(encrypted_data) + decryptor.finalize()
 
     return decrypted_data
+
+
+
+@receiver(post_save, sender=Voter)
+def send_voter_login_email(sender, instance, created, **kwargs):
+    if created:  # Send email only when a new voter is created
+        subject = "Voter Registration Confirmation"
+        message = f"Thank you for registering as a voter. Click on the following link to log in:\n\nhttp://localhost:3000/voterLogin"
+        from_email = settings.DEFAULT_FROM_EMAIL
+        recipient_list = [instance.email]
+
+        send_mail(subject, message, from_email, recipient_list)
