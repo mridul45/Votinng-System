@@ -106,6 +106,20 @@ class VotedViewset(viewsets.ViewSet):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+    def update(self, request, pk=None):
+        try:
+            voted_instance = Voted.objects.get(pk=pk)
+        except Voted.DoesNotExist:
+            return Response({'error': 'Voted instance not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = VotedSerializer(voted_instance, data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
 
 
 class ShareViewset(viewsets.ViewSet):

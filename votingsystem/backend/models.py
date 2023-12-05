@@ -64,6 +64,7 @@ class Voted(models.Model):
 
     voter_id = models.TextField(null=True,blank=True)
     candidate_id = models.TextField(null=True,blank=True)
+    is_confirmed = models.BooleanField(default=False)
 
     def __str__(self):
         return self.voter_id
