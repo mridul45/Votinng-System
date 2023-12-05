@@ -235,3 +235,14 @@ def send_voter_login_email(sender, instance, created, **kwargs):
         recipient_list = [instance.email]
 
         send_mail(subject, message, from_email, recipient_list)
+
+
+@receiver(post_save, sender=Candidate)
+def send_voter_login_email(sender, instance, created, **kwargs):
+    if created:  # Send email only when a new voter is created
+        subject = "Voter Registration Confirmation"
+        message = f"You have been registered"
+        from_email = settings.DEFAULT_FROM_EMAIL
+        recipient_list = [instance.email]
+
+        send_mail(subject, message, from_email, recipient_list)

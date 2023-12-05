@@ -170,7 +170,7 @@ class ShareUploadViewSet(viewsets.ViewSet):
             # Return the random number as a response
             return Response({'random_number': random_number}, status=status.HTTP_200_OK)
         else:
-            return Response({'error': 'Timestamp is not within 2 minutes of the current time'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Invalid share'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 def combine_shares(share1, share2):
